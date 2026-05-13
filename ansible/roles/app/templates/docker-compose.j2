@@ -1,0 +1,23 @@
+services:
+  app:
+    image: todo-api:latest
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://{{ postgres_user }}:{{ postgres_password }}@db:5432/{{ postgres_db }}
+    depends_on:
+      - db
+    restart: always
+
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: {{ postgres_user }}
+      POSTGRES_PASSWORD: {{ postgres_password }}
+      POSTGRES_DB: {{ postgres_db }}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    restart: always
+
+volumes:
+  db_data:

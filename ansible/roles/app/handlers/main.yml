@@ -1,0 +1,5 @@
+- name: Restart application
+  ansible.builtin.command:
+    cmd: docker compose restart
+  args:
+    chdir: "{{ app_dir }}"

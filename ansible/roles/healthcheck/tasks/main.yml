@@ -1,0 +1,19 @@
+- name: Wait for application to be healthy
+  wait_for:
+    host: localhost
+    port: 8000
+    delay: 5
+    timeout: 30
+
+- name: Check /health endpoint
+  uri:
+    url: "http://localhost:8000/health"
+    method: GET
+    status_code: 200
+  register: healthcheck_result
+
+- name: Print healthcheck result
+  debug:
+    var: healthcheck_result
+
+
