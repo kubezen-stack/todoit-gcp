@@ -5,8 +5,7 @@ pipeline {
         POSTGRES_USER = credentials('postgres_user')
         POSTGRES_PASSWORD = credentials('postgres_password')
         POSTGRES_DB = credentials('postgres_db')
-        AWS_ACCESS_KEY_ID = credentials('aws_access_key_id')
-        AWS_SECRET_ACCESS_KEY = credentials('aws_secret_access_key')
+        GOOGLE_CREDENTIALS = credentials('gcp-service-account')
         IMAGE_NAME = 'todo-api'
     }
 
@@ -56,7 +55,7 @@ pipeline {
                 dir('ansible') {
                     sh '''
                     ansible-playbook \
-                        -i inventory/aws_ec2.yml \
+                        -i inventory/gcp_compute.yml \
                         playbook.yml
                     '''
                 }

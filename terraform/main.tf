@@ -31,3 +31,11 @@ module "compute" {
   image            = "ubuntu-2204-lts"
   startup_script   = ""
 }
+
+module "iam" {
+  source = "./iam"
+  
+  project_id   = var.gcp_project_id
+  project_name = var.project_name
+  environment  = var.environment
+}

@@ -62,22 +62,3 @@ variable "startup_script" {
   type        = string
   default     = ""
 }
-  default     = 20
-}
-
-variable "storage_type" {
-  description = "The type of the root EBS volume"
-  type        = string
-  default     = "gp2"
-
-  validation {
-    condition     = contains(["gp2", "gp3"], var.storage_type)
-    error_message = "Storage type must be gp2 or gp3."
-  }
-}
-
-variable "tags" {
-  description = "A map of additional tags to assign to the EC2 instance"
-  type        = map(string)
-  default     = {}
-}

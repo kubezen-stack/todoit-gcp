@@ -1,5 +1,5 @@
 # GCP Configuration
-gcp_project_id = "your-gcp-project-id"
+gcp_project_id = "todo-app-496222"
 gcp_region     = "us-central1"
 
 # Project Configuration

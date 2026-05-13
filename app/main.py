@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database import SessionLocal, engine
 from models import Task, Base
@@ -31,6 +31,8 @@ def create_task(title: str, db: Session = Depends(get_db)):
 @app.patch("/tasks/{task_id}/done")
 def complete_task(task_id: int, db: Session = Depends(get_db)):
     task = db.query(Task).filter(Task.id == task_id).first()
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
     task.done = True
     db.commit()
     return task
