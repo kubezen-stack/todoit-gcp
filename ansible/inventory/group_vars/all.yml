@@ -1,4 +1,4 @@
-ansible_user: "sa_{{ gcp_project_id }}"
+ansible_user: "sa_{{ sa_unique_id }}"
 ansible_ssh_private_key_file: "~/.ssh/gcp_compute_key"
 ansible_ssh_common_args: "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
 

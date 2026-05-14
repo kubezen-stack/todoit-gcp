@@ -35,8 +35,19 @@ variable "machine_type" {
   default     = "e2-micro"
 
   validation {
-    condition     = can(regex("^e2-micro$|^t2d-standard-1$", var.machine_type))
-    error_message = "Use e2-micro or similar small machine types."
+    condition     = can(regex("^e2-micro$|^e2-small$|^e2-medium$", var.machine_type))
+    error_message = "Machine type must be e2-micro, e2-small, or e2-medium."
+  }
+}
+
+variable "instance_role" {
+  description = "Role of the instance (app or jenkins)"
+  type        = string
+  default     = "app"
+
+  validation {
+    condition     = contains(["app", "jenkins"], var.instance_role)
+    error_message = "instance_role must be 'app' or 'jenkins'."
   }
 }
 
@@ -55,10 +66,4 @@ variable "boot_disk_size" {
     condition     = var.boot_disk_size >= 20 && var.boot_disk_size <= 10000
     error_message = "Boot disk size must be between 20 and 10000 GB."
   }
-}
-
-variable "startup_script" {
-  description = "Startup script to run on instance boot"
-  type        = string
-  default     = ""
 }

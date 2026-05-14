@@ -5,6 +5,7 @@ pipeline {
         POSTGRES_USER = credentials('postgres_user')
         POSTGRES_PASSWORD = credentials('postgres_password')
         POSTGRES_DB = credentials('postgres_db')
+        GCP_PROJECT_ID = credentials('gcp_project_id')
         GOOGLE_CREDENTIALS = credentials('gcp-service-account')
         IMAGE_NAME = 'todo-api'
     }
@@ -13,7 +14,7 @@ pipeline {
         stage ('Checkout') {
             agent { label 'git' }
             steps {
-                git branch: 'main', url: 'https://github.com/brunopinto/todo-app.git'
+                git branch: 'main', url: 'https://github.com/kubezen-stack/todoit-gcp.git'
             }
         }
 
@@ -37,7 +38,6 @@ pipeline {
             agent {
                 docker {
                     image 'hashicorp/terraform:latest'
-                    args '-v ${WORKSPACE}/terraform:/workspace -w /workspace'
                 }
             }
             steps {
@@ -54,6 +54,7 @@ pipeline {
             steps {
                 dir('ansible') {
                     sh '''
+                    export GOOGLE_CREDENTIALS=${GOOGLE_CREDENTIALS}
                     ansible-playbook \
                         -i inventory/gcp_compute.yml \
                         playbook.yml

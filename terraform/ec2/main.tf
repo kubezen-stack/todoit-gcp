@@ -6,7 +6,7 @@ locals {
     module      = "compute"
   }
 
-  instance_name = "${var.project_name}-${var.environment}-instance"
+  instance_name = "${var.project_name}-${var.environment}-${var.instance_role}-instance"
 }
 
 resource "google_compute_instance" "app_instance" {
@@ -34,14 +34,12 @@ resource "google_compute_instance" "app_instance" {
     enable-oslogin = "TRUE"
   }
 
-  metadata_startup_script = var.startup_script
-
-  tags = ["app", "terraform"]
-
   labels = merge(local.common_labels, {
     name = local.instance_name
-    role = "app"
+    role = var.instance_role
   })
+  
+  tags = [var.instance_role, "terraform"]
 
   lifecycle {
     ignore_changes = [

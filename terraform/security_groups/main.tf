@@ -20,7 +20,7 @@ resource "google_compute_firewall" "allow_ssh" {
   }
 
   source_ranges = ["0.0.0.0/0"]
-  target_tags   = ["app"]
+  target_tags   = ["app", "jenkins"]
 }
 
 resource "google_compute_firewall" "allow_app" {
@@ -53,6 +53,22 @@ resource "google_compute_firewall" "allow_postgresql" {
 
   source_tags = ["app"]
   target_tags = ["database"]
+}
+
+resource "google_compute_firewall" "allow_jenkins" {
+  name        = "${var.project_name}-${var.environment}-allow-jenkins"
+  description = "Allow Jenkins access from specific IPs"
+  network     = var.network_name
+  direction   = "INGRESS"
+  priority    = 1000
+
+  allow {
+    protocol = "tcp"
+    ports    = ["8080"]
+  }
+
+  source_ranges = ["0.0.0.0/0"]
+  target_tags   = ["jenkins"]
 }
 
 resource "google_compute_firewall" "allow_outbound" {

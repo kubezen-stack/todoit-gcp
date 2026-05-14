@@ -1,6 +1,10 @@
-- hosts: all
+- hosts: jenkins
   become: true
+  roles:
+    - jenkins
 
+- hosts: app
+  become: true
   roles:
     - docker
     - app
