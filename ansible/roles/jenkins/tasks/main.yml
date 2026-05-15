@@ -5,9 +5,9 @@
     update_cache: yes
 
 - name: Add Jenkins GPG key
-  ansible.builtin.apt_key:
-    url: https://pkg.jenkins.io/debian/jenkins.io.key
-    state: present
+  ansible.builtin.get_url:
+    url: https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key
+    dest: /usr/share/keyrings/jenkins-keyring.asc
     mode: "0644"
 
 - name: Add Jenkins repository
