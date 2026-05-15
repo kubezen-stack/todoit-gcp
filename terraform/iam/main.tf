@@ -21,6 +21,12 @@ resource "google_project_iam_member" "ansible_os_login" {
   member  = "serviceAccount:${google_service_account.ansible.email}"
 }
 
+resource "google_project_iam_member" "ansible_secret_accessor" {
+  project = var.project_id
+  role    = "roles/secretmanager.secretAccessor"
+  member  = "serviceAccount:${google_service_account.ansible.email}"
+}
+
 resource "google_project_iam_member" "ansible_os_admin_login" {
   project = var.project_id
   role    = "roles/compute.instanceAdmin.v1"

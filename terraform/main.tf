@@ -20,31 +20,35 @@ module "security_groups" {
 module "compute_app" {
   source = "./ec2"
 
-  project_id      = var.gcp_project_id
-  project_name    = var.project_name
-  environment     = var.environment
-  zone            = var.app_zone
-  network_name    = module.vpc.network_name
-  subnetwork_name = module.vpc.public_subnet_name
-  machine_type    = "e2-micro"
-  boot_disk_size  = 20
-  image           = "ubuntu-2204-lts"
-  instance_role   = "app"
+  project_id                = var.gcp_project_id
+  project_name              = var.project_name
+  environment               = var.environment
+  zone                      = var.app_zone
+  network_name              = module.vpc.network_name
+  subnetwork_name           = module.vpc.public_subnet_name
+  machine_type              = "e2-micro"
+  boot_disk_size            = 20
+  image                     = "ubuntu-2204-lts"
+  instance_role             = "app"
+  service_account_email     = module.iam.ansible_sa_email
+  service_account_unique_id = module.iam.ansible_sa_unique_id
 }
 
 module "compute_jenkins" {
   source = "./ec2"
 
-  project_id      = var.gcp_project_id
-  project_name    = var.project_name
-  environment     = var.environment
-  zone            = var.app_zone
-  network_name    = module.vpc.network_name
-  subnetwork_name = module.vpc.public_subnet_name
-  machine_type    = "e2-medium"
-  boot_disk_size  = 20
-  image           = "ubuntu-2204-lts"
-  instance_role   = "jenkins"
+  project_id                = var.gcp_project_id
+  project_name              = var.project_name
+  environment               = var.environment
+  zone                      = var.app_zone
+  network_name              = module.vpc.network_name
+  subnetwork_name           = module.vpc.public_subnet_name
+  machine_type              = "e2-medium"
+  boot_disk_size            = 20
+  image                     = "ubuntu-2204-lts"
+  instance_role             = "jenkins"
+  service_account_email     = module.iam.ansible_sa_email
+  service_account_unique_id = module.iam.ansible_sa_unique_id
 }
 
 module "iam" {

@@ -33,3 +33,8 @@ output "ansible_sa_key" {
   value       = module.iam.ansible_sa_key
   sensitive   = true
 }
+
+output "ansible_sa_unique_id" {
+  description = "Ansible service account unique ID"
+  value       = module.iam.ansible_sa_unique_id
+}

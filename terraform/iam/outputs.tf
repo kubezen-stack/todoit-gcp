@@ -8,3 +8,8 @@ output "ansible_sa_key" {
   description = "Private key of the Ansible service account"
   sensitive   = true
 }
+
+output "ansible_sa_unique_id" {
+  value       = google_service_account.ansible.unique_id
+  description = "Unique ID of the Ansible service account"
+}

@@ -21,8 +21,8 @@ pipeline {
         stage('Test') {
             agent { label 'python' }
             steps {
-                sh 'pip install -r requirements.txt'
-                sh 'pytest tests/ -v'
+                sh 'pip install -r app/requirements.txt'
+                sh 'pytest app/tests/ -v'
             }
         }
 
@@ -54,10 +54,22 @@ pipeline {
             steps {
                 dir('ansible') {
                     sh '''
-                    export GOOGLE_CREDENTIALS=${GOOGLE_CREDENTIALS}
+                    gcloud secrets versions access latest \
+                        --secret=ansible-ssh-private-key \
+                        --project=${GCP_PROJECT_ID} > ~/.ssh/ansible_key
+
+                    chmod 600 ~/.ssh/ansible_key
+
+                    export ANSIBLE_SA_UNIQUE_ID=$(gcloud iam service-accounts describe \
+                        jenkins-project-dev-sa@${GCP_PROJECT_ID}.iam.gserviceaccount.com \
+                        --format='value(uniqueId)')
+
                     ansible-playbook \
                         -i inventory/gcp_compute.yml \
-                        playbook.yml
+                        playbook.yml \
+                        --private-key=~/.ssh/ansible_key
+
+                    rm ~/.ssh/ansible_key
                     '''
                 }
             }

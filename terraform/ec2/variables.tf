@@ -67,3 +67,33 @@ variable "boot_disk_size" {
     error_message = "Boot disk size must be between 20 and 10000 GB."
   }
 }
+
+variable "ssh_pub_key_secret_name" {
+  description = "Secret Manager secret name containing the SSH public key"
+  type        = string
+  default     = ""
+}
+
+variable "ssh_pub_key_secret_version" {
+  description = "Secret Manager secret version for the SSH public key"
+  type        = string
+  default     = "latest"
+}
+
+variable "ssh_pub_key_file" {
+  description = "Local path to a public SSH key file for instance metadata"
+  type        = string
+  default     = ""
+}
+
+variable "service_account_email" {
+  description = "Service account email to attach to the compute instance"
+  type        = string
+  default     = ""
+}
+
+variable "service_account_unique_id" {
+  description = "Unique ID of the service account used for OS Login"
+  type        = string
+  default     = ""
+}
