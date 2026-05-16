@@ -21,7 +21,7 @@ pipeline {
             agent { label 'python' }
             steps {
                 sh 'pip3 install -r app/requirements.txt'
-                sh 'pytest app/tests/ -v'
+                sh 'python3 -m pytest app/tests/ -v'
             }
         }
 
