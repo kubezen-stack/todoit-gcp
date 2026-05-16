@@ -7,17 +7,6 @@ locals {
   }
 
   instance_name = "${var.project_name}-${var.environment}-${var.instance_role}-instance"
-  ssh_public_key = var.ssh_pub_key_file != "" ? file(var.ssh_pub_key_file) : (
-    var.ssh_pub_key_secret_name != "" ? data.google_secret_manager_secret_version.ansible_pub_key[0].secret_data : ""
-  )
-  ssh_login_user = var.service_account_unique_id != "" ? "sa_${var.service_account_unique_id}" : "ubuntu"
-}
-
-data "google_secret_manager_secret_version" "ansible_pub_key" {
-  count   = var.ssh_pub_key_secret_name != "" ? 1 : 0
-  project = var.project_id
-  secret  = var.ssh_pub_key_secret_name
-  version = var.ssh_pub_key_secret_version
 }
 
 resource "google_compute_instance" "app_instance" {
@@ -41,14 +30,9 @@ resource "google_compute_instance" "app_instance" {
     access_config {}
   }
 
-  metadata = merge(
-    {
-      enable-oslogin = "TRUE"
-    },
-    local.ssh_public_key != "" ? {
-      "ssh-keys" = "${local.ssh_login_user}:${local.ssh_public_key}"
-    } : {}
-  )
+  metadata = {
+    enable-oslogin = "TRUE"
+  }
 
   labels = merge(local.common_labels, {
     name = local.instance_name
@@ -58,8 +42,11 @@ resource "google_compute_instance" "app_instance" {
   tags = [var.instance_role, "terraform"]
 
   lifecycle {
-    ignore_changes = [
-      metadata["ssh-keys"]
-    ]
+    ignore_changes = []
+  }
+
+  service_account {
+    email  = var.service_account_email
+    scopes = ["https://www.googleapis.com/auth/cloud-platform"]
   }
 }

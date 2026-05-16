@@ -4,6 +4,10 @@
     state: directory
     mode: "0755"
 
+- name: Configure Docker authentication for Artifact Registry
+  ansible.builtin.shell: |
+    gcloud auth configure-docker us-central1-docker.pkg.dev --quiet
+
 - name: Render Docker Compose template
   ansible.builtin.template:
     src: docker-compose.j2

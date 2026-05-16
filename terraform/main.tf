@@ -57,4 +57,5 @@ module "iam" {
   project_id   = var.gcp_project_id
   project_name = var.project_name
   environment  = var.environment
+  region       = var.gcp_region
 }

@@ -1,0 +1,9 @@
+# SSH Configuration for gcloud OS Login
+# Place this at ~/.ssh/config
+
+# Match instances by name pattern
+Host jenkins-project-*
+  User root
+  IdentityFile /dev/null
+  ProxyCommand gcloud compute ssh --zone=us-central1-a %h -- -W localhost:22 --project=todo-app-496222
+  StrictHostKeyChecking accept-new

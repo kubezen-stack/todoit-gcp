@@ -68,24 +68,6 @@ variable "boot_disk_size" {
   }
 }
 
-variable "ssh_pub_key_secret_name" {
-  description = "Secret Manager secret name containing the SSH public key"
-  type        = string
-  default     = ""
-}
-
-variable "ssh_pub_key_secret_version" {
-  description = "Secret Manager secret version for the SSH public key"
-  type        = string
-  default     = "latest"
-}
-
-variable "ssh_pub_key_file" {
-  description = "Local path to a public SSH key file for instance metadata"
-  type        = string
-  default     = ""
-}
-
 variable "service_account_email" {
   description = "Service account email to attach to the compute instance"
   type        = string

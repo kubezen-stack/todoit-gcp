@@ -1,20 +1,22 @@
 - name: Install Java
   ansible.builtin.apt:
-    name: openjdk-17-jdk
+    name: openjdk-21-jdk
     state: present
     update_cache: yes
 
 - name: Add Jenkins GPG key
-  ansible.builtin.get_url:
-    url: https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key
-    dest: /usr/share/keyrings/jenkins-keyring.asc
-    mode: "0644"
+  ansible.builtin.shell: |
+    curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io-2026.key | \
+    gpg --dearmor -o /usr/share/keyrings/jenkins-keyring.gpg
+  args:
+    creates: /usr/share/keyrings/jenkins-keyring.gpg
 
 - name: Add Jenkins repository
   ansible.builtin.apt_repository:
-    repo: "deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/"
+    repo: "deb [signed-by=/usr/share/keyrings/jenkins-keyring.gpg] https://pkg.jenkins.io/debian-stable binary/"
     state: present
     filename: jenkins
+    update_cache: yes
 
 - name: Install Jenkins
   ansible.builtin.apt:
@@ -33,25 +35,6 @@
     name: jenkins
     groups: docker
     append: yes
-
-- name: Install Ansible
-  ansible.builtin.apt:
-    name: 
-      - ansible
-      - python3-pip
-    state: present
-
-- name: Install GCP Ansible collection
-  ansible.builtin.command:
-    cmd: ansible-galaxy collection install google.cloud
-  become_user: jenkins
-
-- name: Install Python GCP dependencies
-  ansible.builtin.pip:
-    name:
-      - requests
-      - google-auth
-    state: present
 
 - name: Wait for Jenkins to be fully up
   ansible.builtin.wait_for:

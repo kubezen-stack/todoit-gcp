@@ -6,7 +6,6 @@ pipeline {
         POSTGRES_PASSWORD = credentials('postgres_password')
         POSTGRES_DB = credentials('postgres_db')
         GCP_PROJECT_ID = credentials('gcp_project_id')
-        GOOGLE_CREDENTIALS = credentials('gcp-service-account')
         IMAGE_NAME = 'todo-api'
     }
 
@@ -29,8 +28,13 @@ pipeline {
         stage('Build Docker Image') {
             agent { label 'docker' }
             steps {
-                sh 'docker build -t ${IMAGE_NAME}:${BUILD_NUMBER} ./app'
-                sh 'docker tag ${IMAGE_NAME}:${BUILD_NUMBER} ${IMAGE_NAME}:latest'
+                sh '''
+                    gcloud auth configure-docker us-central1-docker.pkg.dev --quiet
+                    docker build -t us-central1-docker.pkg.dev/todo-app-496222/todo-app/todo-api:${BUILD_NUMBER} ./app
+                    docker tag us-central1-docker.pkg.dev/todo-app-496222/todo-app/todo-api:${BUILD_NUMBER} \
+                            us-central1-docker.pkg.dev/todo-app-496222/todo-app/todo-api:latest
+                    docker push us-central1-docker.pkg.dev/todo-app-496222/todo-app/todo-api:latest
+                '''
             }
         }
 
@@ -54,22 +58,11 @@ pipeline {
             steps {
                 dir('ansible') {
                     sh '''
-                    gcloud secrets versions access latest \
-                        --secret=ansible-ssh-private-key \
-                        --project=${GCP_PROJECT_ID} > ~/.ssh/ansible_key
-
-                    chmod 600 ~/.ssh/ansible_key
-
-                    export ANSIBLE_SA_UNIQUE_ID=$(gcloud iam service-accounts describe \
-                        jenkins-project-dev-sa@${GCP_PROJECT_ID}.iam.gserviceaccount.com \
-                        --format='value(uniqueId)')
-
                     ansible-playbook \
                         -i inventory/gcp_compute.yml \
                         playbook.yml \
-                        --private-key=~/.ssh/ansible_key
-
-                    rm ~/.ssh/ansible_key
+                        --ssh-common-args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" \
+                        -e "ansible_ssh_private_key_file=None"
                     '''
                 }
             }
