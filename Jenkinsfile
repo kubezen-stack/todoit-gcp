@@ -10,7 +10,7 @@ pipeline {
     }
 
     stages {
-        stage ('Checkout') {
+        stage('Checkout') {
             agent { label 'git' }
             steps {
                 git branch: 'main', url: 'https://github.com/kubezen-stack/todoit-gcp.git'
@@ -20,7 +20,7 @@ pipeline {
         stage('Test') {
             agent { label 'python' }
             steps {
-                sh 'pip install -r app/requirements.txt'
+                sh 'pip3 install -r app/requirements.txt'
                 sh 'pytest app/tests/ -v'
             }
         }
@@ -39,11 +39,7 @@ pipeline {
         }
 
         stage('Terraform') {
-            agent {
-                docker {
-                    image 'hashicorp/terraform:latest'
-                }
-            }
+            agent { label 'ansible' }
             steps {
                 dir('terraform') {
                     sh 'terraform init'
@@ -61,8 +57,7 @@ pipeline {
                     ansible-playbook \
                         -i inventory/gcp_compute.yml \
                         playbook.yml \
-                        --ssh-common-args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" \
-                        -e "ansible_ssh_private_key_file=None"
+                        --ssh-common-args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
                     '''
                 }
             }
