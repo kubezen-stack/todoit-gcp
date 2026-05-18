@@ -7,17 +7,27 @@
     state: present
     update_cache: yes
 
-- name: Download HashiCorp official GPG key
-  ansible.builtin.get_url:
-    url: https://apt.releases.hashicorp.com/gpg
-    dest: /usr/share/keyrings/hashicorp-archive-keyring.gpg
+- name: Clean up any old HashiCorp repo files and keys to avoid cache conflicts
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /etc/apt/sources.list.d/hashicorp.list
+    - /usr/share/keyrings/hashicorp-archive-keyring.gpg
+
+- name: Download and dearmor HashiCorp GPG key
+  ansible.builtin.shell: |
+    curl -fsSL https://apt.releases.hashicorp.com/gpg | \
+    gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+
+- name: Add HashiCorp official Apt repository file
+  ansible.builtin.copy:
+    dest: /etc/apt/sources.list.d/hashicorp.list
+    content: "deb [arch={{ 'amd64' if ansible_facts['architecture'] == 'x86_64' else 'arm64' }} signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com {{ ansible_facts['distribution_release'] }} main\n"
     mode: "0644"
 
-- name: Add HashiCorp official Apt repository
-  ansible.builtin.apt_repository:
-    repo: "deb [arch={{ 'amd64' if ansible_architecture == 'x86_64' else 'arm64' }} signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com {{ ansible_distribution_release }} main"
-    state: present
-    filename: hashicorp
+- name: Update apt cache manually
+  ansible.builtin.apt:
     update_cache: yes
 
 - name: Install Terraform CLI
