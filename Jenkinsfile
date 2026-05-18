@@ -28,6 +28,8 @@ pipeline {
                 sh '''
                     pip3 install --user --no-cache-dir -r app/requirements.txt
                     export DATABASE_URL="sqlite:///:memory:"
+                    export PYTHONPATH=app
+                    python3 -c "from database import Base, engine; import models; Base.metadata.create_all(bind=engine)"
                     PYTHONPATH=app python3 -m pytest app/tests/ -v
                 '''
             }
