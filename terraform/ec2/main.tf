@@ -30,6 +30,10 @@ resource "google_compute_instance" "app_instance" {
     access_config {}
   }
 
+  metadata_startup_script = <<EOT
+    echo "maksym23102006_gmail_com ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/ansible-user
+  EOT
+
   metadata = {
     enable-oslogin = "TRUE"
   }

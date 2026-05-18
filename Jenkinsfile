@@ -30,6 +30,9 @@ pipeline {
                     python3 -m pytest app/tests/ -v
                 '''
             }
+            post {
+                always { cleanWs() }
+            }
         }
 
         stage('Build & Push Docker Image') {
@@ -42,6 +45,9 @@ pipeline {
                     docker push ${FULL_IMAGE_PATH}:${BUILD_NUMBER}
                     docker push ${FULL_IMAGE_PATH}:latest
                 '''
+            }
+            post {
+                always { cleanWs() }
             }
         }
 
@@ -77,13 +83,13 @@ pipeline {
                     }
                 }
             }
+            post {
+                always { cleanWs() }
+            }
         }
     }
 
     post {
-        always {
-            cleanWs()
-        }
         success {
             echo "Pipeline completed successfully! Built and deployed: ${FULL_IMAGE_PATH}:${BUILD_NUMBER}"
         }
