@@ -27,6 +27,7 @@ pipeline {
             steps {
                 sh '''
                     pip3 install --user --no-cache-dir -r app/requirements.txt
+                    export DATABASE_URL="sqlite:///:memory:"
                     PYTHONPATH=app python3 -m pytest app/tests/ -v
                 '''
             }
