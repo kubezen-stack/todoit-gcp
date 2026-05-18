@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   app:
     image: us-central1-docker.pkg.dev/todo-app-496222/todo-app/todo-api:latest
@@ -7,17 +9,25 @@ services:
       - DATABASE_URL=postgresql://{{ postgres_user }}:{{ postgres_password }}@db:5432/{{ postgres_db }}
     depends_on:
       - db
+    networks:
+      - todo_network
     restart: always
 
   db:
     image: postgres:15
     environment:
-      POSTGRES_USER: {{ postgres_user }}
-      POSTGRES_PASSWORD: {{ postgres_password }}
-      POSTGRES_DB: {{ postgres_db }}
+      POSTGRES_USER: "{{ postgres_user }}"
+      POSTGRES_PASSWORD: "{{ postgres_password }}"
+      POSTGRES_DB: "{{ postgres_db }}"
     volumes:
       - db_data:/var/lib/postgresql/data
+    networks:
+      - todo_network
     restart: always
 
 volumes:
   db_data:
+
+networks:
+  todo_network:
+    driver: bridge

@@ -2,17 +2,22 @@ pipeline {
     agent none
 
     environment {
-        POSTGRES_USER = credentials('postgres_user')
+        REGISTRY        = 'us-central1-docker.pkg.dev'
+        PROJECT_ID      = 'todo-app-496222'
+        REPOSITORY      = 'todo-app'
+        IMAGE_NAME      = 'todo-api'
+        FULL_IMAGE_PATH = "${REGISTRY}/${PROJECT_ID}/${REPOSITORY}/${IMAGE_NAME}"
+        
+        POSTGRES_USER     = credentials('postgres_user')
         POSTGRES_PASSWORD = credentials('postgres_password')
-        POSTGRES_DB = credentials('postgres_db')
-        GCP_PROJECT_ID = credentials('gcp_project_id')
-        IMAGE_NAME = 'todo-api'
+        POSTGRES_DB       = credentials('postgres_db')
     }
 
     stages {
         stage('Checkout') {
             agent { label 'git' }
             steps {
+                cleanWs()
                 git branch: 'main', url: 'https://github.com/kubezen-stack/todoit-gcp.git'
             }
         }
@@ -20,20 +25,22 @@ pipeline {
         stage('Test') {
             agent { label 'python' }
             steps {
-                sh 'pip3 install -r app/requirements.txt'
-                sh 'python3 -m pytest app/tests/ -v'
+                sh '''
+                    pip3 install --user --no-cache-dir -r app/requirements.txt
+                    python3 -m pytest app/tests/ -v
+                '''
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Build & Push Docker Image') {
             agent { label 'docker' }
             steps {
                 sh '''
-                    gcloud auth configure-docker us-central1-docker.pkg.dev --quiet
-                    docker build -t us-central1-docker.pkg.dev/todo-app-496222/todo-app/todo-api:${BUILD_NUMBER} ./app
-                    docker tag us-central1-docker.pkg.dev/todo-app-496222/todo-app/todo-api:${BUILD_NUMBER} \
-                            us-central1-docker.pkg.dev/todo-app-496222/todo-app/todo-api:latest
-                    docker push us-central1-docker.pkg.dev/todo-app-496222/todo-app/todo-api:latest
+                    gcloud auth configure-docker ${REGISTRY} --quiet
+                    docker build --platform linux/amd64 -t ${FULL_IMAGE_PATH}:${BUILD_NUMBER} ./app
+                    docker tag ${FULL_IMAGE_PATH}:${BUILD_NUMBER} ${FULL_IMAGE_PATH}:latest
+                    docker push ${FULL_IMAGE_PATH}:${BUILD_NUMBER}
+                    docker push ${FULL_IMAGE_PATH}:latest
                 '''
             }
         }
@@ -42,34 +49,46 @@ pipeline {
             agent { label 'ansible' }
             steps {
                 dir('terraform') {
-                    sh 'terraform init'
-                    sh 'terraform plan'
-                    sh 'terraform apply -auto-approve'
+                    sh '''
+                        terraform init -input=false
+                        terraform plan -out=tfplan -input=false
+                        terraform apply -input=false tfplan
+                    '''
                 }
             }
         }
 
-        stage('Ansible') {
+        stage('Ansible Deployment') {
             agent { label 'ansible' }
             steps {
                 dir('ansible') {
-                    sh '''
-                    ansible-playbook \
-                        -i inventory/gcp_compute.yml \
-                        playbook.yml \
-                        --ssh-common-args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
-                    '''
+                    withEnv([
+                        "ANSIBLE_HOST_KEY_CHECKING=False",
+                        "POSTGRES_USER=${POSTGRES_USER}",
+                        "POSTGRES_PASSWORD=${POSTGRES_PASSWORD}",
+                        "POSTGRES_DB=${POSTGRES_DB}"
+                    ]) {
+                        sh '''
+                        ansible-playbook \
+                            -i inventory/gcp_compute.yml \
+                            playbook.yml \
+                            --extra-vars "postgres_user=${POSTGRES_USER} postgres_password=${POSTGRES_PASSWORD} postgres_db=${POSTGRES_DB}"
+                        '''
+                    }
                 }
             }
         }
     }
 
     post {
+        always {
+            cleanWs()
+        }
         success {
-            echo 'Pipeline completed successfully!'
+            echo "Pipeline completed successfully! Built and deployed: ${FULL_IMAGE_PATH}:${BUILD_NUMBER}"
         }
         failure {
-            echo 'Pipeline failed. Please check the logs for details.'
+            echo "Pipeline failed during processing. Please review console outputs above."
         }
     }
 }

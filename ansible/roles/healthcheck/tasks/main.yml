@@ -15,5 +15,3 @@
 - name: Print healthcheck result
   debug:
     var: healthcheck_result
-
-
