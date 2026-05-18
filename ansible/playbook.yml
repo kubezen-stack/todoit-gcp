@@ -2,6 +2,7 @@
   become: true
   roles:
     - docker
+    - terraform
     - jenkins
 
 - hosts: app
