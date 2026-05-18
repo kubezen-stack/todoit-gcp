@@ -39,14 +39,28 @@
     state: started
     enabled: yes
 
+- name: Wait for Jenkins to be fully up
+  ansible.builtin.wait_for:
+    port: 8080
+    delay: 30
+    timeout: 300
+
 - name: Add Jenkins user to docker group
   ansible.builtin.user:
     name: jenkins
     groups: docker
     append: yes
 
-- name: Wait for Jenkins to be fully up
-  ansible.builtin.wait_for:
-    port: 8080
-    delay: 30
-    timeout: 300
+- name: Configure Docker daemon socket group
+  ansible.builtin.copy:
+    dest: /etc/docker/daemon.json
+    content: |
+      {
+        "group": "docker"
+      }
+  notify: Restart Docker
+
+- name: Ensure Jenkins is restarted to apply group changes
+  ansible.builtin.service:
+    name: jenkins
+    state: restarted
