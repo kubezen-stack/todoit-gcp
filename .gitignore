@@ -2,3 +2,13 @@
 *.tfstate
 *.tfstate.backup
 .terraform.lock.hcl
+*.db
+*.sqlite3
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+venv/
+.venv/
+env/

@@ -26,6 +26,7 @@ def create_task(title: str, db: Session = Depends(get_db)):
     task = Task(title=title)
     db.add(task)
     db.commit()
+    db.refresh(task)
     return task
 
 @app.patch("/tasks/{task_id}/done")
@@ -35,4 +36,5 @@ def complete_task(task_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Task not found")
     task.done = True
     db.commit()
+    db.refresh(task)
     return task

@@ -4,11 +4,12 @@ from sqlalchemy.orm import sessionmaker
 from main import app, get_db
 from models import Base
 
-SQLALCHEMY_TEST_URL = "sqlite:///./test.db"
+import os
+SQLALCHEMY_TEST_URL = os.getenv("DATABASE_URL", "sqlite:///./test.db")
 
 engine = create_engine(
     SQLALCHEMY_TEST_URL,
-    connect_args={"check_same_thread": False}
+    connect_args={"check_same_thread": False} if "sqlite" in SQLALCHEMY_TEST_URL else {}
 )
 TestingSessionLocal = sessionmaker(bind=engine)
 
