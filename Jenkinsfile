@@ -27,7 +27,7 @@ pipeline {
             steps {
                 sh '''
                     pip3 install --user --no-cache-dir -r app/requirements.txt
-                    python3 -m pytest app/tests/ -v
+                    PYTHONPATH=app python3 -m pytest app/tests/ -v
                 '''
             }
             post {
@@ -52,7 +52,7 @@ pipeline {
         }
 
         stage('Terraform') {
-            agent { label 'ansible' }
+            agent { label 'terraform' }
             steps {
                 dir('terraform') {
                     sh '''
